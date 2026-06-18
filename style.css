@@ -66,7 +66,7 @@ white-space: nowrap;
 .day-pill.active { background: var(--argon-navy); color: #fff; border-color: var(--argon-navy); }
 .day-pill .count { opacity: 0.7; margin-left: 5px; font-weight: 400; }
 .argon-feed {
-height: 380px;
+height: 500px;
 overflow-y: auto;
 padding: 14px 16px;
 display: flex;
