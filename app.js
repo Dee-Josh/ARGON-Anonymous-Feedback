@@ -1,9 +1,7 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, Timestamp
+  getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
 
 const firebaseConfig = {
   apiKey: "AIzaSyBMcNj2siTJDQdC8Hea5vdZUHZBgljUxJA",
@@ -30,74 +28,74 @@ let allMessages = [];
 let selectedDayKey = null;
 
 function dayKeyFor(date) {
-return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+  return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
 }
 
 function dayLabelFor(key) {
-const todayKey = dayKeyFor(new Date());
-const yestKey = dayKeyFor(new Date(Date.now() - 86400000));
-if (key === todayKey) return 'Today';
-if (key === yestKey) return 'Yesterday';
-const [y, m, d] = key.split('-').map(Number);
-return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const todayKey = dayKeyFor(new Date());
+  const yestKey = dayKeyFor(new Date(Date.now() - 86400000));
+  if (key === todayKey) return 'Today';
+  if (key === yestKey) return 'Yesterday';
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
 function timeLabelFor(date) {
-return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
 
 function showStatus(text) {
-statusLine.textContent = text;
+  statusLine.textContent = text;
 }
 
 function getDayGroups() {
-const groups = {};
-allMessages.forEach(m => {
+  const groups = {};
+  allMessages.forEach(m => {
     const k = dayKeyFor(m.date);
     if (!groups[k]) groups[k] = [];
     groups[k].push(m);
-});
-return groups;
+  });
+  return groups;
 }
 
 function buildDayBar() {
-const groups = getDayGroups();
-const keys = Object.keys(groups).sort().reverse();
-const todayKey = dayKeyFor(new Date());
+  const groups = getDayGroups();
+  const keys = Object.keys(groups).sort().reverse();
+  const todayKey = dayKeyFor(new Date());
 
-if (!keys.includes(todayKey)) keys.unshift(todayKey);
-if (!selectedDayKey || !keys.includes(selectedDayKey)) selectedDayKey = todayKey;
+  if (!keys.includes(todayKey)) keys.unshift(todayKey);
+  if (!selectedDayKey || !keys.includes(selectedDayKey)) selectedDayKey = todayKey;
 
-dayBar.innerHTML = '';
-keys.forEach(key => {
+  dayBar.innerHTML = '';
+  keys.forEach(key => {
     const btn = document.createElement('button');
     btn.className = 'day-pill' + (key === selectedDayKey ? ' active' : '');
     const count = groups[key] ? groups[key].length : 0;
     btn.innerHTML = dayLabelFor(key) + (count > 0 ? `<span class="count">${count}</span>` : '');
     btn.addEventListener('click', () => {
-    selectedDayKey = key;
-    buildDayBar();
-    renderFeed();
+      selectedDayKey = key;
+      buildDayBar();
+      renderFeed();
     });
     dayBar.appendChild(btn);
-});
+  });
 }
 
 function renderFeed() {
-const groups = getDayGroups();
-const dayMsgs = (groups[selectedDayKey] || []).slice().sort((a, b) => a.date - b.date);
+  const groups = getDayGroups();
+  const dayMsgs = (groups[selectedDayKey] || []).slice().sort((a, b) => a.date - b.date);
 
-feed.innerHTML = '';
+  feed.innerHTML = '';
 
-if (dayMsgs.length === 0) {
+  if (dayMsgs.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'argon-empty';
     empty.textContent = 'No messages on this day yet.';
     feed.appendChild(empty);
     return;
-}
+  }
 
-dayMsgs.forEach(m => {
+  dayMsgs.forEach(m => {
     const bubble = document.createElement('div');
     bubble.className = 'msg-bubble';
     const p = document.createElement('p');
@@ -109,56 +107,56 @@ dayMsgs.forEach(m => {
     bubble.appendChild(p);
     bubble.appendChild(t);
     feed.appendChild(bubble);
-});
+  });
 
-feed.scrollTop = feed.scrollHeight;
+  feed.scrollTop = feed.scrollHeight;
 }
 
 // Real-time listener: updates instantly for everyone when any message is added
 const q = query(messagesRef, orderBy("createdAt", "asc"));
 onSnapshot(q, (snapshot) => {
-allMessages = snapshot.docs.map(doc => {
+  allMessages = snapshot.docs.map(doc => {
     const data = doc.data();
     const date = data.createdAt ? data.createdAt.toDate() : new Date();
     return { text: data.text, date };
-});
-buildDayBar();
-renderFeed();XMLDocument
+  });
+  buildDayBar();
+  renderFeed();
 }, (error) => {
-showStatus('Could not connect. Check your Firebase setup.');
-console.error(error);
+  showStatus('Could not connect. Check your Firebase setup.');
+  console.error(error);
 });
 
 async function handleSend() {
-const text = input.value.trim();
-if (!text) return;
+  const text = input.value.trim();
+  if (!text) return;
 
-sendBtn.disabled = true;
-try {
+  sendBtn.disabled = true;
+  try {
     await addDoc(messagesRef, {
-    text: text,
-    createdAt: serverTimestamp()
+      text: text,
+      createdAt: serverTimestamp()
     });
     input.value = '';
     input.style.height = 'auto';
     selectedDayKey = dayKeyFor(new Date());
     showStatus('');
-} catch (e) {
+  } catch (e) {
     showStatus('Could not send. Please try again.');
     console.error(e);
-}
-sendBtn.disabled = false;
-input.focus();
+  }
+  sendBtn.disabled = false;
+  input.focus();
 }
 
 sendBtn.addEventListener('click', handleSend);
 input.addEventListener('keydown', (e) => {
-if (e.key === 'Enter' && !e.shiftKey) {
+  if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     handleSend();
-}
+  }
 });
 input.addEventListener('input', () => {
-input.style.height = 'auto';
-input.style.height = Math.min(input.scrollHeight, 110) + 'px';
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 110) + 'px';
 });
