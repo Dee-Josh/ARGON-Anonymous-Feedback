@@ -24,7 +24,7 @@ justify-content: center;
 background: linear-gradient(180deg, var(--argon-sky-top) 0%, var(--argon-sky-bottom) 75%);
 /* border-radius: 18px; */
 box-shadow: 0 10px 30px rgba(15,36,56,0.15);
-overflow: hidden;
+/* overflow: hidden; */
 height: 100vh;
 }
 .argon-header {
