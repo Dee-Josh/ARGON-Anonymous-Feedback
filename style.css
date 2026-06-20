@@ -148,10 +148,14 @@ flex-shrink: 0;
 } */
 
 .questions div{
-    background-color: #e9eff1;
     border-radius: 10px;
     padding: 10px;
     margin-top: 10px;
+}
+
+.questions-sub div{
+    margin-top: 10px;
+    background-color: #e9eff1;
 }
 
 .questions-input{
