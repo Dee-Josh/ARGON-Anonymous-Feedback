@@ -25,7 +25,7 @@ background: linear-gradient(180deg, var(--argon-sky-top) 0%, var(--argon-sky-bot
 /* border-radius: 18px; */
 box-shadow: 0 10px 30px rgba(15,36,56,0.15);
 /* overflow: hidden; */
-height: 100vh;
+min-height: 100vh;
 }
 .argon-header {
 display: flex;
@@ -128,3 +128,81 @@ flex-shrink: 0;
 .argon-send:hover:not(:disabled) { background: var(--argon-green); }
 .argon-send:disabled { opacity: 0.4; cursor: not-allowed; }
 .argon-footnote { font-size: 11px; color: var(--argon-navy-light); opacity: 0.7; padding: 0 16px 14px; margin: 0; text-align: center; }
+
+
+.daily-feedback{
+    margin: 10px;
+    padding: 5px;
+}
+
+.feedback-header{
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 10px;
+    border-top: 10px solid var(--argon-navy-light);
+}
+
+/* .daily-p{
+    padding-bottom: 20px;
+    border-bottom: 1px solid grey;
+} */
+
+.questions div{
+    background-color: #e9eff1;
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.questions-input{
+    background-color: #e9eff1;
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--argon-sky-top);
+}
+
+.questions-input:focus{
+    outline: none;
+   border-bottom: 1px solid var(--argon-navy-light);
+}
+
+.sub-btn{
+    background-color: var(--argon-navy-light);
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    margin-top: 20px;
+}
+
+
+
+
+/* CHOOSE TAB */
+
+.choose-tab{
+    padding: 10px 15px 0;
+}
+
+.choose-tab button{
+    background-color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.choose-tab button:hover{
+    opacity: .8;
+    cursor: pointer;
+}
+
+.selected{
+    background-color: var(--argon-navy-light) !important;
+    color: var(--argon-sky-bottom);
+}
+
+/* UPDATED TODAY */
+
+.updated-today{
+    margin-bottom: 15px;
+}

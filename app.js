@@ -160,3 +160,152 @@ input.addEventListener('input', () => {
   input.style.height = 'auto';
   input.style.height = Math.min(input.scrollHeight, 110) + 'px';
 });
+
+
+
+
+// CHOOSE TAB
+
+const btn1 = document.querySelector('.btn1');
+const btn2 = document.querySelector('.btn2');
+const groupChat = document.querySelector('.group-chat');
+const feedback = document.querySelector('.daily-feedback');
+btn1.addEventListener('click', ()=>{
+  if(!btn1.classList.contains('selected')){
+    btn1.classList.toggle('selected');
+    btn2.classList.toggle('selected');
+    
+    groupChat.style.display = 'block';
+    feedback.style.display = 'none';
+  }
+})
+btn2.addEventListener('click', ()=>{
+  if(!btn2.classList.contains('selected')){
+    btn1.classList.toggle('selected');
+    btn2.classList.toggle('selected');
+
+    groupChat.style.display = 'none';
+    feedback.style.display = 'block';
+  }
+});
+
+
+
+// FOR UPDATING STREAK COUNT
+const streakCountContainer = document.getElementById('streak');
+
+let streakCount = (localStorage.getItem('streakCount') || 0);
+
+function updateStreakCount() {
+  streakCount = (localStorage.getItem('streakCount') || 0);
+  streakCountContainer.textContent = streakCount
+} 
+updateStreakCount();
+
+
+
+
+// SUBMITTING RESPONSES
+
+const responsesRef = collection(db, "argon_survey_responses");
+
+async function submitSurveyAnswers(answers) {
+  try {
+    await addDoc(responsesRef, {
+      answers: answers,
+      submittedAt: serverTimestamp()
+    });
+    return true; // success
+  } catch (e) {
+    console.error("Failed to submit survey:", e);
+    return false; 
+  }
+}
+
+
+const responses = [
+
+];
+
+const question = [
+  '🌟 What win or achievement are you grateful for today?',
+  '💭 What challenge or frustration did you face today?',
+  '📖 What lesson did God teach you today?',
+  '🤝 Do you need advice, encouragement, or accountability in any area?',
+  '💚 Is there anything you\'d like shared anonymously to encourage the community? ',
+  '🎯 What is one area you would like to improve or be intentional about?',
+  '🙏 Is there anything you would like the community to pray with you about?'
+];
+
+const inputResponses = 
+document.querySelectorAll('.questions input');
+
+const submitBtn = document.querySelector('.sub-btn');
+
+let emptyField = false;
+let compiledResponse = [];
+const answerArray = [];
+let today = new Date().toLocaleDateString();
+let lastUpdated = (localStorage.getItem("lastUpdated") || "");
+
+// CHECKING IF UPDATED TODAY;
+
+const updatedToday = document.querySelector('.updated-today')
+const questionsSub = document.querySelector('.questions-sub')
+
+function checkIfUpdated() {
+  if (lastUpdated === today) {
+    updatedToday.style.display = 'block'
+    questionsSub.style.display = 'none'
+  }
+}
+checkIfUpdated();
+
+
+submitBtn.addEventListener('click', async ()=>{
+  emptyField = false;
+  responses.length = 0; // reset so old answers don't pile up on repeated submissions
+
+  inputResponses.forEach((input)=>{
+    if(input.value === ''){
+      emptyField=true;
+    }else{
+      responses.push(input.value);
+    }
+  });
+
+  if (emptyField){
+    alert("Fill a Fields");
+  }else{
+    compiledResponse.length = 0; // reset this too, same reason
+    for (let i = 0; i < question.length; i++) {
+      compiledResponse.push({
+        id: i,
+        question: question[i],
+        answer: responses[i]
+      })
+    }
+
+    submitBtn.disabled = true; // prevent double-click double-submits while waiting
+
+    const success = await submitSurveyAnswers(compiledResponse);
+
+    if (success) {
+      lastUpdated = today;
+      localStorage.setItem("lastUpdated", lastUpdated);
+      streakCount++;
+      localStorage.setItem('streakCount', streakCount);
+      updateStreakCount();
+      checkIfUpdated();
+      alert("Thank you! Your responses were submitted anonymously.");
+    } else {
+      alert("Something went wrong. Please try again.");
+    }
+
+    submitBtn.disabled = false;
+  }
+})
+
+
+
+

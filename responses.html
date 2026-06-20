@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARGON Survey Responses</title>
+<style>
+  :root {
+    --argon-navy: #0F2438;
+    --argon-navy-light: #1B3A56;
+    --argon-sky-top: #8FD3F4;
+    --argon-sky-bottom: #FFFFFF;
+    --argon-green: #4CAF50;
+    --argon-green-dark: #2E7D32;
+    --argon-green-light: #7CC576;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #eef6fb;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 12px;
+  }
+  .page-wrap { width: 100%; max-width: 560px; }
+  .argon-shell {
+    background: linear-gradient(180deg, var(--argon-sky-top) 0%, var(--argon-sky-bottom) 30%);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(15,36,56,0.15);
+    overflow: hidden;
+    padding-bottom: 16px;
+  }
+  .argon-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(15,36,56,0.12);
+  }
+  .argon-badge {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--argon-navy);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .argon-badge svg { width: 20px; height: 20px; }
+  .argon-title { font-weight: 600; font-size: 16px; color: var(--argon-navy); margin: 0; }
+  .argon-subtitle { font-size: 12.5px; color: var(--argon-navy-light); margin: 2px 0 0; opacity: 0.85; }
+  .argon-status { font-size: 12px; color: var(--argon-green-dark); text-align: center; padding: 4px 0; min-height: 18px; }
+  .responses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 16px 4px;
+    max-height: 75vh;
+    overflow-y: auto;
+  }
+  .response-card {
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(15,36,56,0.1);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .response-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--argon-navy);
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(15,36,56,0.08);
+  }
+  .response-date { font-weight: 400; opacity: 0.6; font-size: 11.5px; }
+  .qa-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .qa-item {
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(15,36,56,0.06);
+  }
+  .qa-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .qa-question {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--argon-navy-light);
+    margin: 0 0 4px;
+  }
+  .qa-answer {
+    font-size: 14px;
+    color: var(--argon-navy);
+    line-height: 1.5;
+    margin: 0;
+  }
+  .argon-empty {
+    text-align: center;
+    color: var(--argon-navy-light);
+    opacity: 0.7;
+    font-size: 13.5px;
+    padding: 30px 20px;
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <div class="argon-shell">
+    <div class="argon-header">
+      <div class="argon-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#7CC576" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 21s6-3 6-10V5l-6-2-6 2v6c0 7 6 10 6 10z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="argon-title">Survey Responses</p>
+        <p class="argon-subtitle">All submissions, shown anonymously</p>
+      </div>
+    </div>
+
+    <div class="argon-status" id="statusLine"></div>
+
+    <div class="responses-list" id="responsesList">
+      <div class="argon-empty" id="emptyState">Loading responses...</div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore, collection, query, orderBy, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // Same config as your other pages
+  const firebaseConfig = {
+    apiKey: "AIzaSyBMcNj2siTJDQdC8Hea5vdZUHZBgljUxJA",
+    authDomain: "argon-anonymous.firebaseapp.com",
+    databaseURL: "https://argon-anonymous-default-rtdb.firebaseio.com",
+    projectId: "argon-anonymous",
+    storageBucket: "argon-anonymous.firebasestorage.app",
+    messagingSenderId: "324975740153",
+    appId: "1:324975740153:web:7efbb4300c1a0ee6d50e28",
+    measurementId: "G-69W0B7Y7YL"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const responsesRef = collection(db, "argon_survey_responses");
+
+  const responsesList = document.getElementById('responsesList');
+  const statusLine = document.getElementById('statusLine');
+
+  function formatDate(date) {
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) +
+           ' · ' + date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  }
+
+  function renderResponses(submissions) {
+    responsesList.innerHTML = '';
+
+    if (submissions.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'argon-empty';
+      empty.textContent = 'No responses yet.';
+      responsesList.appendChild(empty);
+      return;
+    }
+
+    submissions.forEach((sub, index) => {
+      const card = document.createElement('div');
+      card.className = 'response-card';
+
+      const header = document.createElement('div');
+      header.className = 'response-header';
+      header.innerHTML = `<span>Submission #${submissions.length - index}</span><span class="response-date">${formatDate(sub.date)}</span>`;
+      card.appendChild(header);
+
+      // sort by id so question order is always consistent, regardless of how Firestore returns the array
+      const sortedAnswers = sub.answers.slice().sort((a, b) => a.id - b.id);
+
+      const qaList = document.createElement('div');
+      qaList.className = 'qa-list';
+
+      sortedAnswers.forEach((item) => {
+        const qaItem = document.createElement('div');
+        qaItem.className = 'qa-item';
+
+        const qEl = document.createElement('p');
+        qEl.className = 'qa-question';
+        qEl.textContent = item.question;
+
+        const aEl = document.createElement('p');
+        aEl.className = 'qa-answer';
+        aEl.textContent = item.answer;
+
+        qaItem.appendChild(qEl);
+        qaItem.appendChild(aEl);
+        qaList.appendChild(qaItem);
+      });
+
+      card.appendChild(qaList);
+      responsesList.appendChild(card);
+    });
+  }
+
+  // Real-time: newest submissions first
+  const q = query(responsesRef, orderBy("submittedAt", "desc"));
+  onSnapshot(q, (snapshot) => {
+    const submissions = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        answers: data.answers || [], // array of { id, question, answer } objects
+        date: data.submittedAt ? data.submittedAt.toDate() : new Date()
+      };
+    });
+    renderResponses(submissions);
+  }, (error) => {
+    statusLine.textContent = 'Could not load responses. Check your Firebase setup.';
+    console.error(error);
+  });
+</script>
+</body>
+</html>
